@@ -15,5 +15,6 @@ namespace SamsOfflineCodeJudge
     public class JudgerManager
     {
         public static SystemUser RunningUser { get; set; }
+        public static int MaximumTime { get; set; } = 20000;
     }
 }
