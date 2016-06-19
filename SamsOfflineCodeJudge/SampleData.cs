@@ -5,6 +5,11 @@ using System.Text;
 
 namespace SamsOfflineCodeJudge
 {
+    public class DataPair
+    {
+        public string InputData { get; set; }
+        public string OutputData { get; set; }
+    }
     /// <summary>
     /// A problem defined by user
     /// </summary>
@@ -12,16 +17,16 @@ namespace SamsOfflineCodeJudge
     {
         public SampleData()
         {
-            Datas = new List<string>();
+            Datas = new List<DataPair>();
         }
         /// <summary>
         /// Limit Time (ms)
         /// </summary>
-        public int LimitTime { get; set; }
+        public double LimitTime { get; set; }
         /// <summary>
-        /// Limit RAM (Megabytes)
+        /// Limit RAM (bytes)
         /// </summary>
-        public int LimitRAM { get; set; }
-        public List<string> Datas { get; set; }
+        public long LimitRAM { get; set; }
+        public List<DataPair> Datas { get; set; }
     }
 }

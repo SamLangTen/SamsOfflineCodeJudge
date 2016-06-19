@@ -48,11 +48,13 @@
     <Compile Include="CompilerManager.cs" />
     <Compile Include="Judger.cs" />
     <Compile Include="JudgeResult.cs" />
+    <Compile Include="JudgerManager.cs" />
     <Compile Include="JudgeUnit.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SampleData.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
