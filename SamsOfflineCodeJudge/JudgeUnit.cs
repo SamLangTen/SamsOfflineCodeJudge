@@ -2,11 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace SamsOfflineCodeJudge
 {
-    public class Class1
+    public class JudgeUnit
     {
+        public string Code { get; set; }
+        public string Language { get; set; }
     }
 }
