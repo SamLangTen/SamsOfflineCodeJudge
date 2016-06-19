@@ -103,14 +103,22 @@ namespace SamsOfflineCodeJudge
                       //input sample data
                       testProcess.StandardInput.WriteLine(d.InputData);
                       testProcess.StandardInput.Close();
-                      if (WaitForExit)
-                          testProcess.WaitForExit(JudgerManager.MaximumTime);
-                      else
-                          testProcess.WaitForExit(Convert.ToInt32(Data.LimitTime));
+                      //calc memory size
+                      int tickTime = 0;
+                      while (!testProcess.HasExited)
+                      {
+                          result.MaximumRAM = result.MaximumRAM < testProcess.PeakVirtualMemorySize64 ? testProcess.PeakVirtualMemorySize64 : result.MaximumRAM;
+                          tickTime += 100; //calc per 100 ms
+                          if ((WaitForExit && (tickTime > JudgerManager.MaximumTime)) || (!WaitForExit && (tickTime > Data.LimitTime)))
+                          {
+                              testProcess.Kill();
+                              break;
+                          }
+                          Thread.Sleep(100);
+                      }
                       //compare output
                       result.Index = Data.Datas.IndexOf(d);
                       result.TotalTime = (DateTime.Now - startTime).TotalMilliseconds;
-                      //result.MaximumRAM = testProcess.PeakVirtualMemorySize64;
                       result.ExitCode = testProcess.ExitCode;
                       //check exit code
                       if (result.ExitCode != 0)
