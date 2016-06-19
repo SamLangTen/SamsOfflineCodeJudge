@@ -87,8 +87,7 @@ namespace SamsOfflineCodeJudge
                 if (result.TotalTime > Data.LimitTime) result.Result &= JudgeResultEnum.TimeLimitExceeded;
                 judgeResultCollection.Add(result);
             });
-
-            return null;
+            return judgeResultCollection;
         }
         /// <summary>
         /// Start Juding with default compiler
