@@ -53,10 +53,10 @@ namespace SamsOfflineCodeJudge
         {
             //apply for temp directory and compile code
             //apply for temp directory
-            if (!Directory.Exists(Path.GetTempPath() + @"\SOCJTemp"))
-                Directory.CreateDirectory(Path.GetTempPath() + @"\SOCJTemp");
-            var codeFilename = Path.GetTempPath() + @"\SOCJTemp\" + Path.GetRandomFileName();
-            var programFilename = Path.GetTempPath() + @"\SOCJTemp\" + Path.GetRandomFileName();
+            if (!Directory.Exists(Path.GetTempPath() + @"SOCJTemp"))
+                Directory.CreateDirectory(Path.GetTempPath() + @"SOCJTemp");
+            var codeFilename = Path.GetTempPath() + @"SOCJTemp\" + Path.GetRandomFileName() + "." + JudgerManager.LanguageExtensions[Unit.Language];
+            var programFilename = Path.GetTempPath() + @"SOCJTemp\" + Path.GetRandomFileName() + ".exe";
             File.WriteAllText(codeFilename, Unit.Code);
             if (File.Exists(programFilename))
                 File.Delete(programFilename);
@@ -64,6 +64,7 @@ namespace SamsOfflineCodeJudge
             var compilerProcess = new Process();
             compilerProcess.StartInfo.FileName = Compiler.Filename;
             compilerProcess.StartInfo.Arguments = Compiler.Argument.Replace(@"{Filename}", codeFilename).Replace(@"{Output}", programFilename);
+            Console.WriteLine(compilerProcess.StartInfo.Arguments);
             compilerProcess.StartInfo.UseShellExecute = false;
             compilerProcess.StartInfo.CreateNoWindow = true;
             compilerProcess.Start();
@@ -72,7 +73,10 @@ namespace SamsOfflineCodeJudge
             OnCompiled();
             //no compiled file means compile failed
             if (!File.Exists(programFilename))
+            {
                 Results = new List<JudgeResult>(new JudgeResult[] { new JudgeResult() { Result = JudgeResultEnum.CompileError } });
+                return;
+            }
             //run if compilation successful
             //initialize taskfactory
             judgingTasks = new TaskFactory();
@@ -86,8 +90,8 @@ namespace SamsOfflineCodeJudge
                       //define basic options
                       var testProcess = new Process();
                       testProcess.StartInfo.FileName = programFilename;
-                      testProcess.StartInfo.UserName = JudgerManager.RunningUser == null ? Environment.UserName : JudgerManager.RunningUser.Username;
-                      testProcess.StartInfo.Password = JudgerManager.RunningUser == null ? new SecureString() : JudgerManager.RunningUser.Password;
+                      //testProcess.StartInfo.UserName = JudgerManager.RunningUser == null ? Environment.UserName : JudgerManager.RunningUser.Username;
+                      //testProcess.StartInfo.Password = JudgerManager.RunningUser == null ? new SecureString() : JudgerManager.RunningUser.Password;
                       testProcess.StartInfo.UseShellExecute = false;
                       testProcess.StartInfo.CreateNoWindow = true;
                       testProcess.StartInfo.RedirectStandardInput = true;
@@ -97,7 +101,8 @@ namespace SamsOfflineCodeJudge
                       testProcess.Start();
                       var startTime = DateTime.Now;
                       //input sample data
-                      testProcess.StandardInput.Write(d.InputData);
+                      testProcess.StandardInput.WriteLine(d.InputData);
+                      testProcess.StandardInput.Close();
                       if (WaitForExit)
                           testProcess.WaitForExit(JudgerManager.MaximumTime);
                       else
@@ -105,7 +110,7 @@ namespace SamsOfflineCodeJudge
                       //compare output
                       result.Index = Data.Datas.IndexOf(d);
                       result.TotalTime = (DateTime.Now - startTime).TotalMilliseconds;
-                      result.MaximumRAM = testProcess.PeakVirtualMemorySize64;
+                      //result.MaximumRAM = testProcess.PeakVirtualMemorySize64;
                       result.ExitCode = testProcess.ExitCode;
                       //check exit code
                       if (result.ExitCode != 0)
@@ -118,8 +123,8 @@ namespace SamsOfflineCodeJudge
                       //start comparing result
                       var processOutput = testProcess.StandardOutput.ReadToEnd();
                       result.Result = JudgeResultEnum.WrongAnswer;
-                      if (processOutput.Trim() == d.OutputData.Trim()) result.Result = JudgeResultEnum.PresentationError;
-                      if (processOutput == d.OutputData) result.Result = JudgeResultEnum.Accepted;
+                      if (processOutput.Trim() == d.OutputData.Trim()) result.Result = JudgeResultEnum.Accepted;
+                      //if (processOutput == d.OutputData) result.Result = JudgeResultEnum.Accepted;
                       //limitation
                       if (result.MaximumRAM > Data.LimitRAM) result.Result &= JudgeResultEnum.MemoryLimitExceeded;
                       if (result.TotalTime > Data.LimitTime) result.Result &= JudgeResultEnum.TimeLimitExceeded;

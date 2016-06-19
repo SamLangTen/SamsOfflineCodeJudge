@@ -47,6 +47,7 @@
     <Compile Include="Compiler.cs" />
     <Compile Include="CompilerManager.cs" />
     <Compile Include="Judger.cs" />
+    <Compile Include="JudgerCluster.cs" />
     <Compile Include="JudgeResult.cs" />
     <Compile Include="JudgerManager.cs" />
     <Compile Include="JudgeUnit.cs" />

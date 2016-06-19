@@ -16,5 +16,6 @@ namespace SamsOfflineCodeJudge
     {
         public static SystemUser RunningUser { get; set; }
         public static int MaximumTime { get; set; } = 20000;
+        public static Dictionary<string, string> LanguageExtensions = new Dictionary<string, string>();
     }
 }

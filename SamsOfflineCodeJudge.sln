@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SamsOfflineCodeJudge", "Sam
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SamsOfflineCodeJudge.GUI", "SamsOfflineCodeJudge.GUI\SamsOfflineCodeJudge.GUI.csproj", "{2BFB4042-E5A9-4602-9FCA-81E54DF5FB80}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SamsOfflineCodeJudge.UnitTest", "SamsOfflineCodeJudge.UnitTest\SamsOfflineCodeJudge.UnitTest.csproj", "{4D3EE6A4-682E-4A77-830A-5D868442D1A2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{2BFB4042-E5A9-4602-9FCA-81E54DF5FB80}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2BFB4042-E5A9-4602-9FCA-81E54DF5FB80}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2BFB4042-E5A9-4602-9FCA-81E54DF5FB80}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4D3EE6A4-682E-4A77-830A-5D868442D1A2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4D3EE6A4-682E-4A77-830A-5D868442D1A2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4D3EE6A4-682E-4A77-830A-5D868442D1A2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4D3EE6A4-682E-4A77-830A-5D868442D1A2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
