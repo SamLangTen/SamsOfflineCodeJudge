@@ -12,6 +12,7 @@ namespace SamsOfflineCodeJudge
         public Action OnCompleteAny;
         public Action OnCompleteAll;
         private List<Action> CancelTasksDelegate = new List<Action>();
+        public string Name { get; set; }
         public List<JudgeUser> JudgeUsers { get; set; } = new List<JudgeUser>();
         public List<SampleData> SampleDatas { get; set; } = new List<SampleData>();
         public int MaxTaskCount { get; set; } = 10;
