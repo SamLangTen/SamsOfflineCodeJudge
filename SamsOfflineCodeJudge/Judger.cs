@@ -141,7 +141,7 @@ namespace SamsOfflineCodeJudge
                 TestProgram(ProgramFilename, TestData, WaitForExit);
             }, cts.Token).ContinueWith((r) =>
             {
-                OnJudged(this, new JudgementFinishedEventArgs() { Index = Data.Datas.IndexOf(d) });
+                OnJudged(this, new JudgementFinishedEventArgs() { Index = Data.Datas.IndexOf(TestData)});
             });
         }
         /// <summary>
