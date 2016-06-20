@@ -27,8 +27,6 @@ namespace SamsOfflineCodeJudge.UnitTest
             var ju = new JudgeUnit();
             ju.Code = File.ReadAllText(@"D:\SamsOfflineCodeJudge.TestData01\ST33\equation.cpp");
             ju.Language = "C++";
-            //create compiler delegate
-            JudgerManager.LanguageExtensions.Add("C++", "cpp");
             var compiler = new Compiler();
             compiler.Languages = new List<string>();
             compiler.Languages.Add("C");

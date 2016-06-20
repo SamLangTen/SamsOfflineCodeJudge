@@ -41,15 +41,17 @@ namespace SamsOfflineCodeJudge
         /// Called when one judging task finished
         /// </summary>
         public Action OnJudged;
+        /// <summary>
+        /// Cancel all tasks
+        /// </summary>
         public void StopJudging()
         {
             cts.Cancel();
         }
         /// <summary>
-        /// Start Judging with given compiler
+        /// Compile source code
         /// </summary>
-        /// <param name="Compiler">Compiler used to compile the code</param>
-        public void StartJudging(Compiler Compiler, bool WaitForExit)
+        public string CompileCode(Compiler Compiler)
         {
             //apply for temp directory and compile code
             //apply for temp directory
@@ -69,6 +71,73 @@ namespace SamsOfflineCodeJudge
             compilerProcess.StartInfo.CreateNoWindow = true;
             compilerProcess.Start();
             compilerProcess.WaitForExit();
+            File.Delete(codeFilename);
+            return programFilename;
+        }
+        /// <summary>
+        /// Run a test
+        /// </summary>
+        public void TestProgram(string ProgramFilename, DataPair TestData, bool WaitForExit)
+        {
+            Results.Remove(Results.FirstOrDefault(r => r.Index == Data.Datas.IndexOf(TestData)));
+            //define basic options
+            var testProcess = new Process();
+            testProcess.StartInfo.FileName = ProgramFilename;
+            //testProcess.StartInfo.UserName = JudgerManager.RunningUser == null ? Environment.UserName : JudgerManager.RunningUser.Username;
+            //testProcess.StartInfo.Password = JudgerManager.RunningUser == null ? new SecureString() : JudgerManager.RunningUser.Password;
+            testProcess.StartInfo.UseShellExecute = false;
+            testProcess.StartInfo.CreateNoWindow = true;
+            testProcess.StartInfo.RedirectStandardInput = true;
+            testProcess.StartInfo.RedirectStandardOutput = true;
+            testProcess.StartInfo.RedirectStandardError = true;
+            var result = new JudgeResult();
+            testProcess.Start();
+            var startTime = DateTime.Now;
+            //input sample data
+            testProcess.StandardInput.WriteLine(TestData.InputData);
+            testProcess.StandardInput.Close();
+            //calc memory size
+            int tickTime = 0;
+            while (!testProcess.HasExited)
+            {
+                result.MaximumRAM = result.MaximumRAM < testProcess.PeakVirtualMemorySize64 ? testProcess.PeakVirtualMemorySize64 : result.MaximumRAM;
+                tickTime += 100; //calc per 100 ms
+                if ((WaitForExit && (tickTime > JudgerManager.MaximumTime)) || (!WaitForExit && (tickTime > Data.LimitTime)))
+                {
+                    testProcess.Kill();
+                    break;
+                }
+                Thread.Sleep(100);
+            }
+            //compare output
+            result.Index = Data.Datas.IndexOf(TestData);
+            result.TotalTime = (DateTime.Now - startTime).TotalMilliseconds;
+            result.ExitCode = testProcess.ExitCode;
+            //check exit code
+            if (result.ExitCode != 0)
+            {
+                result.Result = JudgeResultEnum.RuntimeError;
+                Results.Add(result);
+                return;
+            }
+            //process exits with code 0 
+            //start comparing result
+            var processOutput = testProcess.StandardOutput.ReadToEnd();
+            result.Result = JudgeResultEnum.WrongAnswer;
+            if (processOutput.Trim() == TestData.OutputData.Trim()) result.Result = JudgeResultEnum.Accepted;
+            //if (processOutput == d.OutputData) result.Result = JudgeResultEnum.Accepted;
+            //limitation
+            if (result.MaximumRAM > Data.LimitRAM) result.Result &= JudgeResultEnum.MemoryLimitExceeded;
+            if (result.TotalTime > Data.LimitTime) result.Result &= JudgeResultEnum.TimeLimitExceeded;
+            Results.Add(result);
+        }
+        /// <summary>
+        /// Start Judging with given compiler
+        /// </summary>
+        /// <param name="Compiler">Compiler used to compile the code</param>
+        public void StartJudging(Compiler Compiler, bool WaitForExit)
+        {
+            var programFilename = CompileCode(Compiler);
             //compilation finished
             OnCompiled();
             //no compiled file means compile failed
@@ -87,66 +156,16 @@ namespace SamsOfflineCodeJudge
             {
                 tasks[Data.Datas.IndexOf(d)] = (judgingTasks.StartNew(() =>
                   {
-                      //define basic options
-                      var testProcess = new Process();
-                      testProcess.StartInfo.FileName = programFilename;
-                      //testProcess.StartInfo.UserName = JudgerManager.RunningUser == null ? Environment.UserName : JudgerManager.RunningUser.Username;
-                      //testProcess.StartInfo.Password = JudgerManager.RunningUser == null ? new SecureString() : JudgerManager.RunningUser.Password;
-                      testProcess.StartInfo.UseShellExecute = false;
-                      testProcess.StartInfo.CreateNoWindow = true;
-                      testProcess.StartInfo.RedirectStandardInput = true;
-                      testProcess.StartInfo.RedirectStandardOutput = true;
-                      testProcess.StartInfo.RedirectStandardError = true;
-                      var result = new JudgeResult();
-                      testProcess.Start();
-                      var startTime = DateTime.Now;
-                      //input sample data
-                      testProcess.StandardInput.WriteLine(d.InputData);
-                      testProcess.StandardInput.Close();
-                      //calc memory size
-                      int tickTime = 0;
-                      while (!testProcess.HasExited)
-                      {
-                          result.MaximumRAM = result.MaximumRAM < testProcess.PeakVirtualMemorySize64 ? testProcess.PeakVirtualMemorySize64 : result.MaximumRAM;
-                          tickTime += 100; //calc per 100 ms
-                          if ((WaitForExit && (tickTime > JudgerManager.MaximumTime)) || (!WaitForExit && (tickTime > Data.LimitTime)))
-                          {
-                              testProcess.Kill();
-                              break;
-                          }
-                          Thread.Sleep(100);
-                      }
-                      //compare output
-                      result.Index = Data.Datas.IndexOf(d);
-                      result.TotalTime = (DateTime.Now - startTime).TotalMilliseconds;
-                      result.ExitCode = testProcess.ExitCode;
-                      //check exit code
-                      if (result.ExitCode != 0)
-                      {
-                          result.Result = JudgeResultEnum.RuntimeError;
-                          Results.Add(result);
-                          return;
-                      }
-                      //process exits with code 0 
-                      //start comparing result
-                      var processOutput = testProcess.StandardOutput.ReadToEnd();
-                      result.Result = JudgeResultEnum.WrongAnswer;
-                      if (processOutput.Trim() == d.OutputData.Trim()) result.Result = JudgeResultEnum.Accepted;
-                      //if (processOutput == d.OutputData) result.Result = JudgeResultEnum.Accepted;
-                      //limitation
-                      if (result.MaximumRAM > Data.LimitRAM) result.Result &= JudgeResultEnum.MemoryLimitExceeded;
-                      if (result.TotalTime > Data.LimitTime) result.Result &= JudgeResultEnum.TimeLimitExceeded;
-                      Results.Add(result);
-                  }, cts.Token));
+                      TestProgram(programFilename, d, WaitForExit);
+                  }, cts.Token).ContinueWith((r) =>
+                  {
+                      OnJudged();
+                  }));
             });
             //binding event notification
-            judgingTasks.ContinueWhenAny(tasks, (t) =>
-            {
-                OnJudged();
-            });
             judgingTasks.ContinueWhenAll(tasks, (t) =>
             {
-                File.Delete(codeFilename);
+
                 File.Delete(programFilename);
                 OnJudgedAll();
             });

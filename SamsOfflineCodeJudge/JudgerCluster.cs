@@ -7,5 +7,6 @@ namespace SamsOfflineCodeJudge
 {
     public class JudgerCluster
     {
+
     }
 }
