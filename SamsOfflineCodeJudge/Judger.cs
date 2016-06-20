@@ -16,13 +16,13 @@ namespace SamsOfflineCodeJudge
     {
         private TaskFactory judgingTasks;
         private CancellationTokenSource cts;
-        private bool CompareIfPresentationError(string Output,string SampleOutput)
+        private bool CompareIfPresentationError(string Output, string SampleOutput)
         {
             //space and enter code
-            if(Output.Replace("\n","")
-                .Replace("\t","")
-                .Replace("\r","")
-                .Replace(" ","")== SampleOutput.Replace("\n", "")
+            if (Output.Replace("\n", "")
+                .Replace("\t", "")
+                .Replace("\r", "")
+                .Replace(" ", "") == SampleOutput.Replace("\n", "")
                 .Replace("\t", "")
                 .Replace("\r", "")
                 .Replace(" ", "")) return true;
@@ -113,6 +113,7 @@ namespace SamsOfflineCodeJudge
             testProcess.StandardInput.Close();
             //calc memory size
             int tickTime = 0;
+            bool isTimeout = false;
             while (!testProcess.HasExited)
             {
                 result.MaximumRAM = result.MaximumRAM < testProcess.PeakVirtualMemorySize64 ? testProcess.PeakVirtualMemorySize64 : result.MaximumRAM;
@@ -120,6 +121,7 @@ namespace SamsOfflineCodeJudge
                 if ((WaitForExit && (tickTime > JudgerManager.MaximumTime)) || (!WaitForExit && (tickTime > Data.LimitTime)))
                 {
                     testProcess.Kill();
+                    isTimeout = true;
                     break;
                 }
                 Thread.Sleep(100);
@@ -129,7 +131,7 @@ namespace SamsOfflineCodeJudge
             result.TotalTime = (DateTime.Now - startTime).TotalMilliseconds;
             result.ExitCode = testProcess.ExitCode;
             //check exit code
-            if (result.ExitCode != 0)
+            if (result.ExitCode != 0 && result.Result != JudgeResultEnum.TimeLimitExceeded)
             {
                 result.Result = JudgeResultEnum.RuntimeError;
                 Results.Add(result);
@@ -138,14 +140,16 @@ namespace SamsOfflineCodeJudge
             //process exits with code 0 
             //start comparing result
             var processOutput = testProcess.StandardOutput.ReadToEnd();
-            result.Result = JudgeResultEnum.WrongAnswer;
+            
             if (processOutput.Trim() == TestData.OutputData.Trim())
                 result.Result = JudgeResultEnum.Accepted;
             else if (CompareIfPresentationError(processOutput.Trim(), TestData.OutputData.Trim()))
                 result.Result = JudgeResultEnum.PresentationError;
+            else
+                result.Result = JudgeResultEnum.WrongAnswer;
             //limitation
             if (result.MaximumRAM > Data.LimitRAM) result.Result &= JudgeResultEnum.MemoryLimitExceeded;
-            if (result.TotalTime > Data.LimitTime) result.Result &= JudgeResultEnum.TimeLimitExceeded;
+            if (result.TotalTime > Data.LimitTime || isTimeout) result.Result &= JudgeResultEnum.TimeLimitExceeded;
             Results.Add(result);
         }
         /// <summary>
@@ -158,7 +162,7 @@ namespace SamsOfflineCodeJudge
                 TestProgram(ProgramFilename, TestData, WaitForExit);
             }, cts.Token).ContinueWith((r) =>
             {
-                OnJudged(this, new JudgementFinishedEventArgs() { Index = Data.Datas.IndexOf(TestData)});
+                OnJudged(this, new JudgementFinishedEventArgs() { Index = Data.Datas.IndexOf(TestData) });
             });
         }
         /// <summary>
