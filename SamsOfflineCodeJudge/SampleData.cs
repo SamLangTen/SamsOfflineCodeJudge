@@ -28,5 +28,6 @@ namespace SamsOfflineCodeJudge
         /// </summary>
         public long LimitRAM { get; set; }
         public List<DataPair> Datas { get; set; }
+        public string Id { get; set; }
     }
 }
