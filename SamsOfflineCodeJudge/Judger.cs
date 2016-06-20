@@ -9,10 +9,25 @@ using System.Security;
 using System.Threading;
 namespace SamsOfflineCodeJudge
 {
+    /// <summary>
+    /// A task presentation of user test
+    /// </summary>
     public class Judger
     {
         private TaskFactory judgingTasks;
         private CancellationTokenSource cts;
+        private bool CompareIfPresentationError(string Output,string SampleOutput)
+        {
+            //space and enter code
+            if(Output.Replace("\n","")
+                .Replace("\t","")
+                .Replace("\r","")
+                .Replace(" ","")== SampleOutput.Replace("\n", "")
+                .Replace("\t", "")
+                .Replace("\r", "")
+                .Replace(" ", "")) return true;
+            return false;
+        }
         public Judger()
         {
             Results = new List<JudgeResult>();
@@ -124,8 +139,10 @@ namespace SamsOfflineCodeJudge
             //start comparing result
             var processOutput = testProcess.StandardOutput.ReadToEnd();
             result.Result = JudgeResultEnum.WrongAnswer;
-            if (processOutput.Trim() == TestData.OutputData.Trim()) result.Result = JudgeResultEnum.Accepted;
-            //if (processOutput == d.OutputData) result.Result = JudgeResultEnum.Accepted;
+            if (processOutput.Trim() == TestData.OutputData.Trim())
+                result.Result = JudgeResultEnum.Accepted;
+            else if (CompareIfPresentationError(processOutput.Trim(), TestData.OutputData.Trim()))
+                result.Result = JudgeResultEnum.PresentationError;
             //limitation
             if (result.MaximumRAM > Data.LimitRAM) result.Result &= JudgeResultEnum.MemoryLimitExceeded;
             if (result.TotalTime > Data.LimitTime) result.Result &= JudgeResultEnum.TimeLimitExceeded;
