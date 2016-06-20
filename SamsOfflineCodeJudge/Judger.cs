@@ -134,10 +134,14 @@ namespace SamsOfflineCodeJudge
         /// <summary>
         /// Run a test (async)
         /// </summary>
-        public void TestProgramAsync(string ProgramFilename,DataPair TestData,bool WaitForExit)
+        public Task TestProgramAsync(string ProgramFilename, DataPair TestData, bool WaitForExit)
         {
-            Task.Factory.StartNew(() => {
-
+            return Task.Factory.StartNew(() =>
+            {
+                TestProgram(ProgramFilename, TestData, WaitForExit);
+            }, cts.Token).ContinueWith((r) =>
+            {
+                OnJudged(this, new JudgementFinishedEventArgs() { Index = Data.Datas.IndexOf(d) });
             });
         }
         /// <summary>
@@ -151,7 +155,7 @@ namespace SamsOfflineCodeJudge
             if (!File.Exists(programFilename))
             {
                 //compilation finished
-                OnCompiled(this,new CompilationFinishedEventArgs() { IsCompilationSucceeded = false });
+                OnCompiled(this, new CompilationFinishedEventArgs() { IsCompilationSucceeded = false });
                 Results = new List<JudgeResult>(new JudgeResult[] { new JudgeResult() { Result = JudgeResultEnum.CompileError } });
                 return;
             }
@@ -172,13 +176,12 @@ namespace SamsOfflineCodeJudge
                       TestProgram(programFilename, d, WaitForExit);
                   }, cts.Token).ContinueWith((r) =>
                   {
-                      OnJudged(this,new JudgementFinishedEventArgs() { Index = Data.Datas.IndexOf(d) });
+                      OnJudged(this, new JudgementFinishedEventArgs() { Index = Data.Datas.IndexOf(d) });
                   }));
             });
             //binding event notification
             judgingTasks.ContinueWhenAll(tasks, (t) =>
             {
-
                 File.Delete(programFilename);
                 OnJudgedAll();
             });
