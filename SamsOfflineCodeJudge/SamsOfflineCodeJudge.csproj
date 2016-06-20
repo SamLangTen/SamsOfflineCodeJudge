@@ -44,25 +44,23 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Compiler.cs" />
-    <Compile Include="CompilerManager.cs" />
-    <Compile Include="EventArgs.cs" />
-    <Compile Include="Judger.cs" />
+    <Compile Include="Compiler\Compiler.cs" />
+    <Compile Include="Compiler\CompilerManager.cs" />
+    <Compile Include="Judger\EventArgs.cs" />
+    <Compile Include="Judger\Judger.cs" />
     <Compile Include="Cluster\JudgerCluster.cs" />
-    <Compile Include="JudgeResult.cs" />
-    <Compile Include="JudgerManager.cs" />
-    <Compile Include="JudgeUnit.cs" />
+    <Compile Include="Judger\JudgeResult.cs" />
+    <Compile Include="Cluster\JudgerManager.cs" />
+    <Compile Include="Judger\JudgeUnit.cs" />
     <Compile Include="Cluster\JudgeUser.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SampleData.cs" />
+    <Compile Include="Judger\SampleData.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Judger\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
