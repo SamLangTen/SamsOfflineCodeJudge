@@ -9,5 +9,6 @@ namespace SamsOfflineCodeJudge
     {
         public string Id { get; set; }
         public List<JudgeUnit> Units { get; set; } = new List<JudgeUnit>();
+        public List<UserReport> Reports { get; set; } = new List<UserReport>();
     }
 }

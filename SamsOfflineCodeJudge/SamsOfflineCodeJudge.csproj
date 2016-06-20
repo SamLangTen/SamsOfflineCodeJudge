@@ -44,6 +44,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Cluster\UserReport.cs" />
     <Compile Include="Compiler\Compiler.cs" />
     <Compile Include="Compiler\CompilerManager.cs" />
     <Compile Include="Judger\EventArgs.cs" />
