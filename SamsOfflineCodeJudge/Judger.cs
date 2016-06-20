@@ -32,7 +32,7 @@ namespace SamsOfflineCodeJudge
         /// <summary>
         /// Called when compilation finished
         /// </summary>
-        public Action OnCompiled;
+        public Action<object, CompilationFinishedEventArgs> OnCompiled;
         /// <summary>
         /// Called when all judging task finished
         /// </summary>
@@ -40,7 +40,7 @@ namespace SamsOfflineCodeJudge
         /// <summary>
         /// Called when one judging task finished
         /// </summary>
-        public Action OnJudged;
+        public Action<object, JudgementFinishedEventArgs> OnJudged;
         /// <summary>
         /// Cancel all tasks
         /// </summary>
@@ -132,19 +132,32 @@ namespace SamsOfflineCodeJudge
             Results.Add(result);
         }
         /// <summary>
+        /// Run a test (async)
+        /// </summary>
+        public void TestProgramAsync(string ProgramFilename,DataPair TestData,bool WaitForExit)
+        {
+            Task.Factory.StartNew(() => {
+
+            });
+        }
+        /// <summary>
         /// Start Judging with given compiler
         /// </summary>
         /// <param name="Compiler">Compiler used to compile the code</param>
         public void StartJudging(Compiler Compiler, bool WaitForExit)
         {
             var programFilename = CompileCode(Compiler);
-            //compilation finished
-            OnCompiled();
             //no compiled file means compile failed
             if (!File.Exists(programFilename))
             {
+                //compilation finished
+                OnCompiled(this,new CompilationFinishedEventArgs() { IsCompilationSucceeded = false });
                 Results = new List<JudgeResult>(new JudgeResult[] { new JudgeResult() { Result = JudgeResultEnum.CompileError } });
                 return;
+            }
+            else
+            {
+                OnCompiled(this, new CompilationFinishedEventArgs() { IsCompilationSucceeded = true });
             }
             //run if compilation successful
             //initialize taskfactory
@@ -159,7 +172,7 @@ namespace SamsOfflineCodeJudge
                       TestProgram(programFilename, d, WaitForExit);
                   }, cts.Token).ContinueWith((r) =>
                   {
-                      OnJudged();
+                      OnJudged(this,new JudgementFinishedEventArgs() { Index = Data.Datas.IndexOf(d) });
                   }));
             });
             //binding event notification

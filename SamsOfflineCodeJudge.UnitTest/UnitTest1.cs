@@ -36,14 +36,14 @@ namespace SamsOfflineCodeJudge.UnitTest
             var judger = new Judger();
             judger.Data = data;
             judger.Unit = ju;
-            
-            judger.OnCompiled = () =>
+            var isFinished = false;
+            judger.OnCompiled = (s,e) =>
             {
-                Console.WriteLine("Compilation Done!");
+                Console.WriteLine("Compilation {0}",e.IsCompilationSucceeded);
             };
-            judger.OnJudged = () =>
+            judger.OnJudged = (s, e) =>
             {
-                Console.WriteLine("Judged one!");
+                Console.WriteLine("Judged one,index:{0}",e.Index);
             };
             judger.OnJudgedAll = () =>
             {
@@ -51,9 +51,10 @@ namespace SamsOfflineCodeJudge.UnitTest
                 judger.Results.ForEach((r) => {
                     Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}",r.Index,r.MaximumRAM,r.TotalTime,r.ExitCode,r.Result.ToString());
                 });
+                isFinished = true;
             };
             judger.StartJudging(compiler, true);
-            Thread.Sleep(10000);
+            while (!isFinished) ;
             Console.WriteLine();
         }
     }

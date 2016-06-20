@@ -46,6 +46,7 @@
   <ItemGroup>
     <Compile Include="Compiler.cs" />
     <Compile Include="CompilerManager.cs" />
+    <Compile Include="EventArgs.cs" />
     <Compile Include="Judger.cs" />
     <Compile Include="JudgerCluster.cs" />
     <Compile Include="JudgeResult.cs" />
