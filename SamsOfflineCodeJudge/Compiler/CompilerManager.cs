@@ -11,7 +11,7 @@ namespace SamsOfflineCodeJudge
     /// </summary>
     public static class CompilerManager
     {
-        public static List<Compiler> Compilers { get; set; }
+        public static List<Compiler> Compilers { get; set; } = new List<Compiler>();
         public static void LoadCompilerList(string JsonFilename)
         {
             var file = new FileStream(JsonFilename, FileMode.Open);

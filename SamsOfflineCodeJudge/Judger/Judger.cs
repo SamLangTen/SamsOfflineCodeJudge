@@ -52,6 +52,7 @@ namespace SamsOfflineCodeJudge
         /// Called when all judging task finished
         /// </summary>
         public Action OnJudgedAll;
+
         /// <summary>
         /// Called when one judging task finished
         /// </summary>
@@ -81,7 +82,6 @@ namespace SamsOfflineCodeJudge
             var compilerProcess = new Process();
             compilerProcess.StartInfo.FileName = Compiler.Filename;
             compilerProcess.StartInfo.Arguments = Compiler.Argument.Replace(@"{Filename}", codeFilename).Replace(@"{Output}", programFilename);
-            Console.WriteLine(compilerProcess.StartInfo.Arguments);
             compilerProcess.StartInfo.UseShellExecute = false;
             compilerProcess.StartInfo.CreateNoWindow = true;
             compilerProcess.Start();
@@ -116,15 +116,16 @@ namespace SamsOfflineCodeJudge
             bool isTimeout = false;
             while (!testProcess.HasExited)
             {
-                result.MaximumRAM = result.MaximumRAM < testProcess.PeakVirtualMemorySize64 ? testProcess.PeakVirtualMemorySize64 : result.MaximumRAM;
-                tickTime += 100; //calc per 100 ms
+                try { result.MaximumRAM = result.MaximumRAM < testProcess.PeakVirtualMemorySize64 ? testProcess.PeakVirtualMemorySize64 : result.MaximumRAM; }
+                catch (Exception){ throw; }
+                tickTime += 10; //calc per 100 ms
                 if ((WaitForExit && (tickTime > JudgerManager.MaximumTime)) || (!WaitForExit && (tickTime > Data.LimitTime)))
                 {
                     testProcess.Kill();
                     isTimeout = true;
                     break;
                 }
-                Thread.Sleep(100);
+                Thread.Sleep(10);
             }
             //compare output
             result.Index = Data.Datas.IndexOf(TestData);
@@ -140,7 +141,7 @@ namespace SamsOfflineCodeJudge
             //process exits with code 0 
             //start comparing result
             var processOutput = testProcess.StandardOutput.ReadToEnd();
-            
+
             if (processOutput.Trim() == TestData.OutputData.Trim())
                 result.Result = JudgeResultEnum.Accepted;
             else if (CompareIfPresentationError(processOutput.Trim(), TestData.OutputData.Trim()))
@@ -162,7 +163,7 @@ namespace SamsOfflineCodeJudge
                 TestProgram(ProgramFilename, TestData, WaitForExit);
             }, cts.Token).ContinueWith((r) =>
             {
-                OnJudged(this, new JudgementFinishedEventArgs() { Index = Data.Datas.IndexOf(TestData) });
+                OnJudged?.Invoke(this, new JudgementFinishedEventArgs() { Index = Data.Datas.IndexOf(TestData) });
             });
         }
         /// <summary>
@@ -176,13 +177,13 @@ namespace SamsOfflineCodeJudge
             if (!File.Exists(programFilename))
             {
                 //compilation finished
-                OnCompiled(this, new CompilationFinishedEventArgs() { IsCompilationSucceeded = false });
+                OnCompiled?.Invoke(this, new CompilationFinishedEventArgs() { IsCompilationSucceeded = false });
                 Results = new List<JudgeResult>(new JudgeResult[] { new JudgeResult() { Result = JudgeResultEnum.CompileError } });
                 return;
             }
             else
             {
-                OnCompiled(this, new CompilationFinishedEventArgs() { IsCompilationSucceeded = true });
+                OnCompiled?.Invoke(this, new CompilationFinishedEventArgs() { IsCompilationSucceeded = true });
             }
             //run if compilation successful
             //initialize taskfactory
@@ -197,14 +198,14 @@ namespace SamsOfflineCodeJudge
                       TestProgram(programFilename, d, WaitForExit);
                   }, cts.Token).ContinueWith((r) =>
                   {
-                      OnJudged(this, new JudgementFinishedEventArgs() { Index = Data.Datas.IndexOf(d) });
+                      OnJudged?.Invoke(this, new JudgementFinishedEventArgs() { Index = Data.Datas.IndexOf(d) });
                   }));
             });
             //binding event notification
             judgingTasks.ContinueWhenAll(tasks, (t) =>
             {
                 File.Delete(programFilename);
-                OnJudgedAll();
+                OnJudgedAll?.Invoke();
             });
         }
         /// <summary>
